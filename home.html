@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>LENR SOLR Search</title>
+
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Add any other styles specific to this page */
+    .menu {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #57068C;
+      position: fixed;
+      /* Fix the menu at the top */
+      top: 0;
+      /* Set the menu at the top */
+      width: 100%;
+      /* Make the menu full-width */
+    }
+
+    .menu li {
+      float: left;
+    }
+
+    .menu li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    .menu li a:hover {
+      background-color: #57068C;
+    }
+
+    h1 {
+      text-align: center;
+      color: #57068C;
+      margin-top: 40px;
+    }
+
+    .search-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 20px;
+    }
+
+    .filter-column {
+      flex: 15%;
+      margin-right: 2%;
+      padding: 10px;
+      background-color: #d6d6d6;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .results-container {
+      flex: 70%;
+      background-color: #d6d6d6;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      /* Add a fixed height and scroll for the result section */
+      height: 1200px;
+      /* Adjust the height as needed */
+      overflow-y: auto;
+    }
+
+    .explore-container {
+      flex: 15%;
+      padding: 10px;
+    }
+
+    .filter-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .filter-input {
+      width: 90%;
+      padding: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .clear-button {
+      margin-top: 10px;
+      padding: 2px;
+      width: 16px;
+      height: 16px;
+      background-color: #ddd;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .clear-button::before,
+    .clear-button::after {
+      content: "";
+      width: 10px;
+      height: 2px;
+      background-color: #555;
+    }
+
+    .clear-button::before {
+      transform: rotate(45deg);
+    }
+
+    .clear-button::after {
+      transform: rotate(-45deg);
+    }
+
+    .search-button {
+      padding: 5px 10px;
+      background-color: #57068C;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    .result-item {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 20px;
+    }
+
+    .result-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .result-authors {
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #79068c;
+    }
+
+    .result-publication {
+      font-size: 14px;
+      color: #79068c;
+    }
+
+    .result-year {
+      font-size: 14px;
+      color: #79068c;
+    }
+
+    .result-abstract {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .result-link {
+      display: block;
+      margin-top: 10px;
+      color: #57068C;
+      text-decoration: none;
+    }
+
+    .result-link:hover {
+      text-decoration: underline;
+    }
+
+    .no-results {
+      text-align: center;
+      color: #777;
+    }
+
+    .explore-button {
+      padding: 5px 10px;
+      background-color: #57068C;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    .read-more-button {
+      padding: 5px 10px;
+      background-color: #57068C;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .search-result-count {
+      background-color: #f1f1f1;
+      padding: 10px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    #totalResults {
+      color: #000;
+    }
+  </style>
+
+
+</head>
+
+<body>
+
+  <h1>LENR SOLR Search</h1>
+  <div id="totalResults"></div>
+  <div class="search-container">
+    <div class="filter-column">
+      <div class="filter-container">
+        <h3 class="filter-title">Author</h3>
+        <div style="position: relative;">
+          <input type="text" id="authorInput" class="filter-input" placeholder="Search by author...">
+          <button class="clear-button" onclick="clearInput('authorInput')"></button>
+        </div>
+      </div>
+      <div class="filter-container">
+        <h3 class="filter-title">Title</h3>
+        <div style="position: relative;">
+          <input type="text" id="titleInput" class="filter-input" placeholder="Search by title...">
+          <button class="clear-button" onclick="clearInput('titleInput')"></button>
+        </div>
+      </div>
+      <div class="filter-container">
+        <h3 class="filter-title">Publication</h3>
+        <div style="position: relative;">
+          <select id="publicationInput" class="filter-input">
+            <option value="">Select publication...</option>
+            <!-- Options will be populated dynamically -->
+          </select>
+          <button class="clear-button" onclick="clearInput('publicationInput')"></button>
+        </div>
+      </div>
+      <div class="filter-container">
+        <h3 class="filter-title">Year Range</h3>
+        <div style="position: relative;">
+          <input type="text" id="yearStartInput" class="filter-input" placeholder="Start Year">
+          <input type="text" id="yearEndInput" class="filter-input" placeholder="End Year">
+          <button class="clear-button" onclick="clearYearRange()"></button>
+        </div>
+      </div>
+      <button type="submit" class="search-button" onclick="searchScholar()">Search</button>
+    </div>
+    <div class="results-container" id="searchResults"></div>
+    <div id="moreLikeThisResults"></div>
+    <div class="explore-container">
+      <div>
+        <button class="explore-button" onclick="openAnalyticsPage()">Explore</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="pagination-container" id="paginationContainer"></div>
+
+  <script>
+    var currentPage = 1;
+    var pageSize = 5;
+    var totalResults = 0;
+
+
+
+    function clearInput(inputId) {
+      document.getElementById(inputId).value = '';
+    }
+
+    function clearYearRange() {
+      document.getElementById('yearStartInput').value = '';
+      document.getElementById('yearEndInput').value = '';
+    }
+
+    function searchScholar() {
+      var solrURL = 'http://34.162.223.203/solr/new_core/select'; // Solr server URL
+      var username = 'admin'; // Replace with your Solr username
+      var password = 'Rsp7qmrM3YXF'; // Replace with your Solr password
+      var credentials = btoa(username + ':' + password);
+
+      var author = document.getElementById('authorInput').value;
+      var title = document.getElementById('titleInput').value;
+      var publication = document.getElementById('publicationInput').value;
+      var yearStart = document.getElementById('yearStartInput').value;
+      var yearEnd = document.getElementById('yearEndInput').value;
+      var query = '';
+
+      // Modify the query construction to use AND condition
+      var queryParts = [];
+
+      if (author.trim() !== '') {
+        queryParts.push('all_authors:' + encodeURIComponent(author));
+      }
+
+      if (title.trim() !== '') {
+        queryParts.push('title:' + encodeURIComponent(title));
+      }
+
+      if (publication.trim() !== '') {
+        queryParts.push('publisher:' + encodeURIComponent(publication));
+      }
+
+      if (yearStart.trim() !== '' && yearEnd.trim() !== '') {
+        queryParts.push('year_published:[' + encodeURIComponent(yearStart) + ' TO ' + encodeURIComponent(yearEnd) + ']');
+      }
+
+      if (queryParts.length > 0) {
+        query = queryParts.join(' AND ');
+      }
+
+      var queryParam = 'q=' + encodeURIComponent(query);
+      var fields = ['title', 'all_authors', 'publisher', 'year_published', 'abstract', 'document_link', 'text_from_pdf'];
+      var fieldParams = 'fl=' + fields.join(',');
+
+      // Reset currentPage to 1
+      currentPage = 1;
+
+      // Make a request to Solr
+      fetch(solrURL + '?' + queryParam + '&' + fieldParams + '&rows=5000', {
+        headers: {
+          'Authorization': 'Basic ' + credentials
+        }
+      }).then(response => response.json())
+        .then(data => {
+          // Process the search results
+          var results = data.response.docs;
+          totalResults = data.response.numFound; // Set the totalResults variable
+          var output = '';
+
+          if (results.length > 0) {
+            for (var i = 0; i < results.length; i++) {
+              var title = results[i].title;
+              var authors = results[i].all_authors;
+              var publication = results[i].publisher;
+              var year = results[i].year_published;
+              var abstract = results[i].abstract;
+              var documentLink = results[i].document_link; // Define documentLink variable here
+
+              output += '<div class="result-item">';
+              output += '<h2 class="result-title">' + title + '</h2>';
+              output += '<p class="result-authors">' + authors + '</p>';
+              output += '<p class="result-publication">' + publication + '</p>';
+              output += '<p class="result-year">' + year + '</p>';
+              output += '<p class="result-abstract">' + abstract + '</p>';
+              output += '<a href="' + documentLink + '" class="read-more-button" target="_blank">Read More</a>';
+
+              // Add More Like This button
+
+
+              output += '</div>';
+            }
+          } else {
+            output += '<p class="no-results">No results found.</p>';
+          }
+
+          // Display the search results
+          document.getElementById('searchResults').innerHTML = output;
+          // Update pagination
+          updatePagination();
+          // After processing the search results, display the count of results
+          document.getElementById('totalResults').textContent = 'Your search found ' + totalResults + ' results';
+
+        })
+        .catch(error => {
+          console.error('Failed to fetch search results:', error);
+          document.getElementById('searchResults').innerHTML = 'Failed to fetch search results.';
+        });
+    }
+
+    function moreLikeThis(title) {
+      var solrURL = 'http://34.162.223.203/solr/new_core/mlt'; // Solr MLT handler URL
+
+      // Make a request to Solr MLT handler
+      fetch(solrURL + '?fl=title,all_authors,publisher,year_published,abstract,document_link&q=' + encodeURIComponent('title:' + title) + '&rows=5')
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          // Check if the 'response' property exists in the data
+          if (data.response && data.response.docs) {
+            // Process the More Like This results
+            var mltResults = data.response.docs;
+            var output = '';
+
+            if (mltResults.length > 0) {
+              for (var i = 0; i < mltResults.length; i++) {
+                // Process and build the output here
+                // ...
+              }
+            } else {
+              output += '<p class="no-results">No related results found.</p>';
+            }
+
+            // Display the More Like This results
+            document.getElementById('moreLikeThisResults').innerHTML = output;
+          } else {
+            // Handle error when the 'response' property is not present
+            document.getElementById('moreLikeThisResults').innerHTML = 'Failed to fetch More Like This results. Unexpected response format.';
+          }
+        })
+        .catch(error => {
+          // Handle fetch errors
+          console.error('Failed to fetch More Like This results:', error);
+          document.getElementById('moreLikeThisResults').innerHTML = 'Failed to fetch More Like This results.';
+        });
+    }
+
+    function updatePagination() {
+      var totalPages = Math.ceil(totalResults / pageSize);
+      var paginationContainer = document.getElementById('paginationContainer');
+
+      paginationContainer.innerHTML = '';
+
+      var startPage = 1;
+      var endPage = totalPages;
+
+      if (totalPages > 10) {
+        if (currentPage <= 6) {
+          endPage = 10;
+        } else if (currentPage >= totalPages - 4) {
+          startPage = totalPages - 9;
+        } else {
+          startPage = currentPage - 5;
+          endPage = currentPage + 4;
+        }
+      }
+
+      if (currentPage > 1) {
+        var prevPage = createPaginationButton('<<', currentPage - 1);
+        paginationContainer.appendChild(prevPage);
+      }
+
+      for (var i = startPage; i <= endPage; i++) {
+        var paginationItem = createPaginationButton(i, i);
+        paginationContainer.appendChild(paginationItem);
+      }
+
+      if (currentPage < totalPages) {
+        var nextPage = createPaginationButton('>>', currentPage + 1);
+        paginationContainer.appendChild(nextPage);
+      }
+
+      paginationContainer.addEventListener('click', function (event) {
+        var target = event.target;
+        if (target.classList.contains('pagination')) {
+          var page = target.textContent;
+          if (page === '<<') {
+            currentPage = currentPage - 1;
+          } else if (page === '>>') {
+            currentPage = currentPage + 1;
+          } else {
+            currentPage = parseInt(page);
+          }
+          searchScholar();
+        }
+      });
+    }
+
+    function createPaginationButton(text, page) {
+      var paginationButton = document.createElement('span');
+      paginationButton.textContent = text;
+      paginationButton.classList.add('pagination');
+      if (page === currentPage) {
+        paginationButton.classList.add('current');
+      }
+      return paginationButton;
+    }
+
+    function updateYearRangeValue(value) {
+      document.getElementById("yearRangeValue").textContent = value;
+    }
+
+    function getStartIndex() {
+      return (currentPage - 1) * pageSize;
+    }
+
+    function clearInput(inputId) {
+      document.getElementById(inputId).value = '';
+    }
+
+    function populatePublicationDropdown() {
+      var solrURL = 'http://34.162.223.203/solr/new_core/select'; // Solr server URL
+      var username = 'admin'; // Replace with your Solr username
+      var password = 'Rsp7qmrM3YXF'; // Replace with your Solr password
+      var credentials = btoa(username + ':' + password);
+
+      var field = 'publisher_str';
+      var facetParam = 'facet=true&facet.field=' + field + '&facet.limit=-1&json.nl=arrarr';
+
+      // Make a request to Solr
+      fetch(solrURL + '?' + facetParam, {
+        headers: {
+          'Authorization': 'Basic ' + credentials
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          // Process the facet results
+          var facetCounts = data.facet_counts.facet_fields[field];
+          var selectElement = document.getElementById('publicationInput');
+
+          for (var i = 0; i < facetCounts.length; i += 2) {
+            var value = facetCounts[i];
+            var count = facetCounts[i + 1];
+            var option = document.createElement('option');
+            option.value = value;
+            option.text = value + ' (' + count + ')';
+            selectElement.appendChild(option);
+          }
+        })
+        .catch(error => {
+          console.error('Failed to fetch facet results:', error);
+        });
+    }
+
+    // Populate the publication dropdown with values from Solr data
+    window.addEventListener('DOMContentLoaded', function () {
+      populatePublicationDropdown();
+    });
+
+
+  </script>
+</body>
+
+</html>
