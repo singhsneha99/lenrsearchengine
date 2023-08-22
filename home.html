@@ -285,7 +285,7 @@
     }
 
     function searchScholar() {
-      var solrURL = 'http://34.162.223.203/solr/new_core/select'; // Solr server URL
+      var solrURL = 'https://34.162.223.203/solr/new_core/select'; // Solr server URL
       var username = 'admin'; // Replace with your Solr username
       var password = 'Rsp7qmrM3YXF'; // Replace with your Solr password
       var credentials = btoa(username + ':' + password);
@@ -380,7 +380,7 @@
     }
 
     function moreLikeThis(title) {
-      var solrURL = 'http://34.162.223.203/solr/new_core/mlt'; // Solr MLT handler URL
+      var solrURL = 'https://34.162.223.203/solr/new_core/mlt'; // Solr MLT handler URL
 
       // Make a request to Solr MLT handler
       fetch(solrURL + '?fl=title,all_authors,publisher,year_published,abstract,document_link&q=' + encodeURIComponent('title:' + title) + '&rows=5')
@@ -490,7 +490,7 @@
     }
 
     function populatePublicationDropdown() {
-      var solrURL = 'http://34.162.223.203/solr/new_core/select'; // Solr server URL
+      var solrURL = 'https://34.162.223.203/solr/new_core/select'; // Solr server URL
       var username = 'admin'; // Replace with your Solr username
       var password = 'Rsp7qmrM3YXF'; // Replace with your Solr password
       var credentials = btoa(username + ':' + password);
